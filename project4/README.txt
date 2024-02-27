@@ -10,3 +10,17 @@ Passing all tests are not sufficient to obtain all points for this assignment. A
 
 
 
+// @caleb notes
+// print_workload
+
+// delete(int value, char delete_type) //idx(i) or head(h)
+
+//txt_to_workload
+
+// reverse list (for FIFO)
+
+
+// FIFO - basic add, then reverse, delete head
+// SJF - ordered, delete head,
+// priority - ordered, delete head
+// round robin- delete by idx
