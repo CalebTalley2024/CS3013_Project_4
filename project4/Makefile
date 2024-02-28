@@ -34,7 +34,7 @@ all: $(BINARIES)
 
 OPT = -O3
 
-scheduler: scheduler.o
+scheduler: scheduler.o job_api.o # job api_o added here
 	gcc -g $(OPT) $^ -o $@
 
 %.o: %.c Makefile

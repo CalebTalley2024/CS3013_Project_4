@@ -8,7 +8,7 @@ Note that the test cases are expecting exact matches in string formatting and wh
 Passing all tests are not sufficient to obtain all points for this assignment. As an example, any assignment in which hardcodes the expected output to pass the test case will lead to point deductions.
 
 
-
+make && ./scheduler
 
 // @caleb notes
 // print_workload
@@ -21,6 +21,10 @@ Passing all tests are not sufficient to obtain all points for this assignment. A
 
 
 // FIFO - basic add, then reverse, delete head
-// SJF - ordered, delete head,
-// priority - ordered, delete head
+// SJF - ordered add, delete head,
+// priority - ordered add, delete head
 // round robin- delete by idx
+
+
+
+refactored make file and code to have  api c and h files
