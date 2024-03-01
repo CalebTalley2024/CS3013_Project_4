@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
 
     // scanf("%d", &p_type_int);
 
-    char p_type[] = "FIFO";
+    char p_type[] = "PRIO";
     // char p_type[] = "SJF"; // DOES NOT WORK
     // char p_type[] = "RoundRobin";
     // char p_type[] = "PRIO"; // DOES NOT WORK
@@ -35,14 +35,15 @@ int main(int argc, char **argv) {
     }
 
     
-    printf("Before Delete\n");
+    // printf("Before Delete\n");
     print_workload(W1);
 
-    delete_job(W1,1);
+    // delete_job(W1,1);
 
-    printf("After Delete\n");
+    // printf("After Delete\n");
 
-    print_workload(W1);
+    // print_workload(W1);
+
     // Don't forget to free allocated memory before exiting the program
     free(W1);
 

@@ -21,6 +21,12 @@ Job *create_job(int id, int len, int prio)
 */
 int add_job(Workload *workload, Job *new_job, const char p_type[])
 { // by default, adds job to the head of the list
+
+	if (workload -> head == NULL){ // if there are no jobs in the workload, simply put job in
+		new_job->next = workload->head;
+		workload->head = new_job;
+		return 0;
+	}
 	if ((strcmp(p_type, "FIFO") == 0) || (strcmp(p_type, "RoundRobin") == 0))
 	{
 
@@ -30,83 +36,70 @@ int add_job(Workload *workload, Job *new_job, const char p_type[])
 	}
 	else if (strcmp(p_type, "SJF") == 0)
 	{ // order from smallest to largest LEN
+		int new_job_len = new_job->len;
 		Job *curr = workload->head;
 		Job *prev = NULL;
 		while (curr != NULL)
 		{ // until we go through whole list
 			// get length of new job and current job
-			int new_job_len = new_job->len;
 			int curr_len = curr->len;
-			if (new_job_len <= curr_len)
+			printf("is %d < %d? \n",curr_len,new_job_len);
+
+			if ( curr_len < new_job_len) // if job is larger than curr job, consider next job
 			{ // check if new_job len is less than curr
-				if (prev == NULL)
-				{ // Condition 1: make new job the new hear
-					new_job->next = workload->head;
-					workload->head = new_job;
-					return 0;
-				}
-				else
-				{ // Condition 2, insert job in between 2 jobs
-					int prev_len = prev->len;
-					// if new_job_len is in between prev_len and curr _len....
-					//... insert new job in between prev_len and curr_len
-					if (prev_len <= new_job_len)
-					{
-						prev->next = new_job;
-						new_job->next = curr;
-						return 0;
-					}
-				}
+				prev = curr;
+				curr = curr -> next;
 			}
-			// update prev
-			prev = curr;
-			curr = curr->next;
+			else // if the new job <= current job len, insert it in between prev and curr
+			{
+				new_job->next = curr;
+				if (prev != NULL)
+				{
+						prev->next = new_job;
+				}
+				return 0;
+			}
 		}
-		printf("idx is out of bounds");
-		return 1;
+		// edge case: tail of list/workload
+		// prev is the end of the list after the while loop
+		prev -> next = new_job;
+		return 0;
 	}
 	else if (strcmp(p_type, "PRIO") == 0)
-	{ // order from smallest to largest Priority
-		Job *curr = workload->head;
-		Job *prev = NULL;
-		while (curr != NULL)
-		{ // until we go through whole list
-			// get length of new job and current job
+	{ // order from smallest to largest LEN
 			int new_job_prio = new_job->prio;
-			int curr_prio = curr->prio;
-			if (new_job_prio <= curr_prio)
-			{ // check if new_job len is less than curr
-				if (prev == NULL)
-				{ // Condition 1: make new job the new hear
-					new_job->next = workload->head;
-					workload->head = new_job;
+			Job *curr = workload->head;
+			Job *prev = NULL;
+			while (curr != NULL)
+			{ // until we go through whole list
+				// get length of new job and current job
+				int curr_prio = curr->prio;
+				printf("is %d < %d? \n",curr_prio,new_job_prio);
+				if ( curr_prio < new_job_prio) // if job is larger than curr job, consider next job
+				{ // check if new_job len is less than curr
+					prev = curr;
+					curr = curr -> next;
+				}
+				else // if the new job <= current job len, insert it in between prev and curr
+				{
+					new_job->next = curr;
+					if (prev != NULL)
+					{
+							prev->next = new_job;
+					}
 					return 0;
 				}
-				else
-				{ // Condition 2, insert job in between 2 jobs
-					int prev_prio = prev->prio;
-					// if new_job_len is in between prev_len and curr _len....
-					//... insert new job in between prev_len and curr_len
-					if (prev_prio <= new_job_prio)
-					{
-						prev->next = new_job;
-						new_job->next = curr;
-						return 0;
-					}
-				}
 			}
-			// update prev
-			prev = curr;
-			curr = curr->next;
+			// edge case: tail of list/workload
+			// prev is the end of the list after the while loop
+			prev -> next = new_job;
+			return 0;
 		}
-		printf("idx is out of bounds");
-		return 1;
-	}
 	else
 	{
-		printf("Non-Valid Priority Queue");
-		return 2;
-	}
+		perror("invalid priorty queue type");
+		return -1;
+	} 
 }
 
 // deletes job
