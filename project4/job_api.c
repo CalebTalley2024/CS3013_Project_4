@@ -34,7 +34,7 @@ int add_job(Workload *workload, Job *new_job, const char p_type[])
 		workload->head = new_job;
 		return 0;
 	}
-	else if (strcmp(p_type, "SJF") == 0)
+	else if (strcmp(p_type, "SJF") == 0)  // by low to high LENGTH
 	{ // order from smallest to largest LEN
 		int new_job_len = new_job->len;
 		Job *curr = workload->head;
@@ -65,7 +65,7 @@ int add_job(Workload *workload, Job *new_job, const char p_type[])
 		prev -> next = new_job;
 		return 0;
 	}
-	else if (strcmp(p_type, "PRIO") == 0)
+	else if (strcmp(p_type, "PRIO") == 0) // from low to high PRIORITY
 	{ // order from smallest to largest LEN
 			int new_job_prio = new_job->prio;
 			Job *curr = workload->head;
