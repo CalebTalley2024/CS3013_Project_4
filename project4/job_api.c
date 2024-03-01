@@ -111,6 +111,7 @@ int add_job(Workload *workload, Job *new_job, const char p_type[])
 
 // deletes job
 // target_id: id of the job we want to delete
+// minimum id value: 1
 int delete_job(Workload *workload, int target_id)
 { // removes job based on id
 	if (workload->head ==NULL)
@@ -118,11 +119,11 @@ int delete_job(Workload *workload, int target_id)
 		perror("NULL pointer");
 		return -1;
 	};
-	if (target_id == 0)
+	if (target_id == 1)
 	{ // deletes head
 		Job *temp = workload->head;
 		workload->head = temp->next; // new head is what the next up job
-		printf("removed id %d",temp -> id);
+		printf("removed id %d\n",temp -> id);
 		free(temp);					 // free meory
 		return 0;
 	}
@@ -135,10 +136,10 @@ int delete_job(Workload *workload, int target_id)
 		{ // find index
 			prev = curr;
 			curr = curr->next;
-			if (curr->id == target_id)
+			if ((curr->id == target_id))
 			{ // also updates curr_idx
 				prev->next = curr->next;
-				printf("removed id %d",curr -> id);
+				printf("removed id: %d\n",curr -> id);
 				free(curr); // delete memory associate with the job
 				return 0;
 			}
@@ -175,5 +176,5 @@ void print_workload(Workload *workload)
 		printf("Job ID: %d, Length: %d, Priority: %d\n", curr->id, curr->len, curr -> prio);
 		curr = curr->next;
 	}
-	printf("End of Load \n");
+	printf("End of Load \n\n");
 }

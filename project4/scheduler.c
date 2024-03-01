@@ -28,16 +28,21 @@ int main(int argc, char **argv) {
     add_job(W1, j3, p_type);
     add_job(W1, j4, p_type);
 
-    
+    //fscanf
 
     if ((strcmp(p_type, "FIFO") == 0) || (strcmp(p_type, "RoundRobin") == 0)) {
         reverse_workload(W1);
     }
 
-    delete_job(W1,1);
     
+    printf("Before Delete\n");
     print_workload(W1);
 
+    delete_job(W1,1);
+
+    printf("After Delete\n");
+
+    print_workload(W1);
     // Don't forget to free allocated memory before exiting the program
     free(W1);
 

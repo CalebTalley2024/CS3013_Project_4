@@ -9,10 +9,10 @@
 
 
 typedef struct job_node { // jobNode
-		int id ;
+		int id;
 		int len; //length/amount of time to complete the job
 		int prio; // priority // default val = 0
-		struct job_node *next;
+		struct job_node*next;
 		int time_spent_waiting;
 		//should we have another variable that constantly increases called "totalTime"
 		//when the job enters the scheduler, this variable should increase until the job is being worked on
