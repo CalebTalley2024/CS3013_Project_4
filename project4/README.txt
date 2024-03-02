@@ -15,16 +15,11 @@ make && ./scheduler
 
 // delete(int value, char delete_type) //idx(i) or head(h)
 
-//txt_to_workload
+Policy Analysis: Novel Workloads
+1: 5+ jobs, len = 4 (same as time slice)
+2: One big value followed by a series of ones
+3: 5+ jobs, len = multiple of 4
+4: Time slices are 1, maybe length is 20
+5: 3 9 24
 
-// reverse list (for FIFO)
-
-
-// FIFO - basic add, then reverse, delete head
-// SJF - ordered add, delete head,
-// priority - ordered add, delete head
-// round robin- delete by idx
-
-
-
-refactored make file and code to have  api c and h files
+Make sure all test cases 

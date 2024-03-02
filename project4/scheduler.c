@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
     // print_workload(workload);
     char p_type[] = "RoundRobin";
     Workload *workload = (Workload *)malloc(sizeof(Workload));
-    char path[] = "tests/18.in";
+    char path[] = "tests/1.in";
 
     workload -> total_time = 0;
 
@@ -39,3 +39,6 @@ int main(int argc, char **argv) {
 
     return 0;
 }
+
+
+//3 9
