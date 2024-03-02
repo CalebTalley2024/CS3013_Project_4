@@ -43,7 +43,7 @@ int add_job(Workload *workload, Job *new_job, const char p_type[])
 		{ // until we go through whole list
 			// get length of new job and current job
 			int curr_len = curr->len;
-			printf("is %d < %d? \n",curr_len,new_job_len);
+			// printf("is %d < %d? \n",curr_len,new_job_len);
 
 			if ( curr_len < new_job_len) // if job is larger than curr job, consider next job
 			{ // check if new_job len is less than curr
@@ -74,7 +74,7 @@ int add_job(Workload *workload, Job *new_job, const char p_type[])
 			{ // until we go through whole list
 				// get length of new job and current job
 				int curr_prio = curr->prio;
-				printf("is %d < %d? \n",curr_prio,new_job_prio);
+				// printf("is %d < %d? \n",curr_prio,new_job_prio);
 				if ( curr_prio < new_job_prio) // if job is larger than curr job, consider next job
 				{ // check if new_job len is less than curr
 					prev = curr;
