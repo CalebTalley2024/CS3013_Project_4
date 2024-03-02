@@ -13,7 +13,7 @@ typedef struct job_node { // jobNode
 		int len; //length/amount of time to complete the job
 		int prio; // priority // default val = 0
 		struct job_node*next;
-		int time_spent_waiting;
+		//int time_spent_waiting;
 		//should we have another variable that constantly increases called "totalTime"
 		//when the job enters the scheduler, this variable should increase until the job is being worked on
 
@@ -46,6 +46,7 @@ typedef struct job_node { // jobNode
 
 typedef struct job_list{
     Job *head;
+	int total_time;
 }Workload;
 
 
@@ -54,3 +55,4 @@ int add_job(Workload *workload, Job *new_job, const char type[]);
 int delete_job(Workload *workload, int target_id);
 int reverse_workload(Workload *workload);
 void print_workload(Workload *workload);
+int file_to_workload(char path[], Workload* WL, char p_type[]);
