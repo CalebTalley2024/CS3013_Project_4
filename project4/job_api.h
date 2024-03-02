@@ -52,7 +52,6 @@ typedef struct job_list{
 
 Job *create_job(int id, int len, int prio);
 int add_job(Workload *workload, Job *new_job, const char type[]);
-int delete_job(Workload *workload, int target_id);
 int reverse_workload(Workload *workload);
 void print_workload(Workload *workload);
 int file_to_workload(char path[], Workload* WL, char p_type[]);
