@@ -21,13 +21,19 @@ int main(int argc, char **argv) {
 
     // Array to store the numbers (adjust size as needed)
     // print_workload(workload);
-    char p_type[] = "PRIO";
+    char p_type[] = "RoundRobin";
     Workload *workload = (Workload *)malloc(sizeof(Workload));
     char path[] = "tests/18.in";
+
+    workload -> total_time = 0;
 
     file_to_workload(path, workload, p_type);
 
     print_workload(workload);
+
+    int time_slice = 10;
+    
+    workload_exec(workload, time_slice, p_type);
 
     free(workload);
 

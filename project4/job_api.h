@@ -56,3 +56,6 @@ int delete_job(Workload *workload, int target_id);
 int reverse_workload(Workload *workload);
 void print_workload(Workload *workload);
 int file_to_workload(char path[], Workload* WL, char p_type[]);
+int workload_exec(Workload *WL, int time_slice, char p_type[]);
+int not_RR_exec(Workload * workload);
+int RR_exec(Workload *WL, int time_slice);
