@@ -5,15 +5,41 @@
 #include <unistd.h>
 #include "job_api.h"
 
+//if 0, edit turnaround time, if 1, edit wait time
+int edit_time(Workload_Stats * WL_Stats, int id, int time_type, int value){
+	Finished_Job_Stats * curr = WL_Stats->head;
+	while(curr != NULL){
+		if(curr->id == id){
+			if(time_type == 0){
+				curr->turnaround_time = value;
+				return 0;
+			} else if(time_type == 1) {
+				curr->wait_time = value;
+				return 0;
+			} else {
+				printf("Time type invalid, use only 0 or 1");
+				return -1;
+			}
+		}
+		curr = curr->next;
+	}
+	printf("Target id not found, could not edit time type %d", time_type);
+	return -1;
+}
+
 Job *create_job(int id, int len, int prio)
 { // creates job node
 	Job *new_job = (Job *)malloc(sizeof(Job));
 	// set up pointers
 	new_job->id = id;
 	new_job->len = len;
+	new_job ->init_len = len;
 	// new_job->time_spent_waiting = 0; // this will start mattering when the p
 	new_job->next = NULL;
 	new_job->prio = prio;
+	new_job->first_access = 0;
+
+	
 	return new_job;
 }
 
@@ -40,7 +66,7 @@ int add_job(Workload *workload, Job *new_job, const char p_type[])
 		workload->head = new_job;
 		return 0;
 	}
-	if ((strcmp(p_type, "FIFO") == 0) || (strcmp(p_type, "RoundRobin") == 0))
+	if ((strcmp(p_type, "FIFO") == 0) || (strcmp(p_type, "RR") == 0))
 	{
 
 		new_job->next = workload->head;
@@ -65,7 +91,13 @@ int add_job(Workload *workload, Job *new_job, const char p_type[])
 			}
 			else // if the new job <= current job len, insert it in between prev and curr
 			{
+				if(workload->head == curr){
+					workload->head = new_job;
+					new_job->next = curr;
+					return 0;
+				}
 				new_job->next = curr;
+
 				if (prev != NULL)
 				{
 					prev->next = new_job;
@@ -231,7 +263,7 @@ int file_to_workload(char path[], Workload *WL, char p_type[])
 	}
 	fclose(fp);
 	// if FIFO, reverse the workload (earliest job is first)
-	if ((strcmp(p_type, "FIFO") == 0))
+	if ((strcmp(p_type, "FIFO") == 0)||(strcmp(p_type, "RR") == 0) )
 	{
 		reverse_workload(WL);
 	}
@@ -242,12 +274,12 @@ int file_to_workload(char path[], Workload *WL, char p_type[])
 
 
 int workload_exec(Workload *WL, int time_slice, char p_type[]){
-	printf("Execution trace with: %s\n", p_type);
+	printf("Execution trace with %s:\n", p_type);
 
     if(strcmp(p_type, "FIFO") == 0||strcmp(p_type, "SJF") == 0||strcmp(p_type, "PRIO") == 0){
 		//printf("I DONT SEE RROBIN \n");
         not_RR_exec(WL);
-    } else if(strcmp(p_type, "RoundRobin") == 0) {
+    } else if(strcmp(p_type, "RR") == 0) {
 		//printf("I SEE RROBIN \n");
         RR_exec(WL, time_slice);
 	} else {
@@ -312,6 +344,13 @@ int RR_exec(Workload *WL, int time_slice)
 		Job *temp = NULL;
 		while (curr != NULL)
 		{
+			if(curr->first_access == 0){
+				curr->first_access = 1;
+				int res_time = WL->stats->total_time; //first time being run, acts as response time
+				Finished_Job_Stats * new_head = create_job_stats(curr -> id, res_time, 0, 0); //make sure analysis is in order, must create now
+				new_head -> next = WL->stats->head; // add to list
+		 		WL->stats->head = new_head;
+			}
 			// printf("curr->id: %d\ncurr->len: %d\ntime_slice: %d\n\n", curr->id, curr->len, time_slice);
 			if (time_slice <= curr->len)
 			{
@@ -324,8 +363,8 @@ int RR_exec(Workload *WL, int time_slice)
 			else
 			{								 // the time remaining is less than the time slice
 				printf("Job %d ran for: %d\n", curr->id, curr->len);
-				curr->len -= curr->len;		 // remove a time_slice amount of time length from curr job
 				WL -> stats -> total_time += curr->len; // add to total time of workload execution
+				curr->len -= curr->len;		 // remove a time_slice amount of time length from curr job
 				
 			}
 			/* if job has  len equal to 0,
@@ -335,7 +374,10 @@ int RR_exec(Workload *WL, int time_slice)
 			curr = curr->next;
 			if (temp->len == 0) 
 			{
-				
+				int wait_time = (WL->stats->total_time) - (temp->init_len);
+				//printf("Total time: %d\n", WL->stats->total_time);
+				edit_time(WL->stats, temp->id, 0, WL->stats->total_time);
+				edit_time(WL->stats, temp->id, 1, wait_time);
 				if (prev != NULL){
 					prev -> next = curr;
 				} else {// at the head
@@ -353,6 +395,7 @@ int RR_exec(Workload *WL, int time_slice)
 			}
 		}
 	}
+	reverse_jobs_stats(WL->stats);
 	// printf("End of execution with RR.\n");
 	return 0;
 }
@@ -373,8 +416,8 @@ int alg_analysis(Workload_Stats * WL_Stats, char p_type[]){
 	
 	float avg_response = (float)(WL_Stats -> total_res_time)/(WL_Stats -> num_jobs);
 	float avg_turnaround = (float)(WL_Stats -> total_turnaround_time)/(WL_Stats -> num_jobs);
-	printf("Total Wait: %d\n", WL_Stats -> total_wait_time);
-	printf("Number of Jobs: %d\n", WL_Stats -> num_jobs);
+	// printf("Total Wait: %d\n", WL_Stats -> total_wait_time);
+	// printf("Number of Jobs: %d\n", WL_Stats -> num_jobs);
 	float avg_wait = (float)(WL_Stats -> total_wait_time)/(WL_Stats -> num_jobs);
 
 	/*
@@ -393,3 +436,7 @@ int alg_analysis(Workload_Stats * WL_Stats, char p_type[]){
 
 	return 0;
 }
+
+//wait time
+//response time is the first time it starts working
+//turnaround time how long it took since time = 0

@@ -22,7 +22,7 @@ Policy Analysis: Novel Workloads
 1: 5+ jobs, len = 4 (same as time slice)
 2: One big value followed by a series of ones
 3: 5+ jobs, len = multiple of 4
-4: Time slices are 1, maybe length is 20
+4: Time slices are 4, maybe length is 80
 5: 3 9 24
 
 Make sure all test cases 

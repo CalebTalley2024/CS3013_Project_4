@@ -8,14 +8,12 @@ typedef struct job_node { // jobNode
 		int id;
 		int len; //length/amount of time to complete the job
 		int prio; // priority // default val = 0
-		struct job_node*next;
 		int T_s; // T(starts)
 		int T_c; // T(completes)
-
+		int init_len; // initial length of job used for RR
+		int first_access; //used to track when to store response time for RR
+		struct job_node*next;
 }Job;
-
-
-
 
 typedef struct job_stats{
 	int id;
@@ -43,6 +41,20 @@ typedef struct Workload{
 	Workload_Stats *stats;
 }Workload;
 
+/*
+
+hashmap to store prio values
+
+array to get the order of job execution
+
+init hashmap with array
+
+go through list and update hashmap valoues
+
+print for each hashmap key
+
+*/
+
 
 Job *create_job(int id, int len, int prio);
 Finished_Job_Stats *create_job_stats(int id, int res_time, int turnaround_time, int wait_time);
@@ -55,3 +67,4 @@ int not_RR_exec(Workload * workload);
 int RR_exec(Workload *WL, int time_slice);
 int alg_analysis(Workload_Stats * WL_Stats, char p_type[]);
 int reverse_jobs_stats(Workload_Stats * WL_Stats);
+int edit_time(Workload_Stats * WL_Stats, int id, int time_type, int value);

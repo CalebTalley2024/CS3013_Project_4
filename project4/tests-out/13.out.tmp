@@ -1,7 +1,10 @@
-Priority Type: RoundRobin
-Job ID: 0, Length: 3, Priority: 32578
-End of Load 
+Priority Type: FIFO
+The total # of Jobs 1
 
-Execution trace with: RoundRobin
+Execution trace with FIFO:
 Job 0 ran for: 3
-End of execution with RoundRobin.
+End of execution with FIFO.
+Begin analyzing FIFO:
+Job 0 -- Response time: 0  Turnaround: 3  Wait: 0
+Average -- Response: 0.00  Turnaround: 3.00  Wait: 0.00
+End analyzing FIFO.
