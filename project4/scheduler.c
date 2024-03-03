@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "job_api.h"
+// #include "hashmap.h"
 
 
 
@@ -24,7 +25,7 @@ int main(int argc, char **argv) {
     // printf("%d",argv[3]);
     if(argc != 4){
         printf("This program requires 4 arguments:\n");
-        printf("The first argument is ./scheduler\nThe second is the algorithm type\nThe third is the test file\nAnd the fourth is the time slice");
+        printf("The first argument is ./scheduler\nThe second is the algorithm type\nThe third is the test file\nAnd the fourth is the time slice\n");
         return -1;
     }
 
@@ -65,14 +66,19 @@ int main(int argc, char **argv) {
     //printf("Digit 1: %d\nDigit 2?: %d\n", digit1, maybedigit2);
     //char is_analysis = path[5];
     //printf("Character at index 8: %s\n", is_analysis);
+ 
+    // create hashmap
+    // key: priority
+    // values: time stats ( response, turnaround, wait)
+    HashMap *prio_stat_map = create_hashmap(WL->stats->num_jobs);
 
-    workload_exec(WL, time_slice, p_type, alg_or_not);
+    workload_exec(WL, time_slice, p_type, alg_or_not, prio_stat_map);
     //depending on what alg_or_not is, the workload_exec will either have
     //print statements, or avoid them. For 1, it will avoid, and for 0, it
     //will include.
 
     if(alg_or_not == 1){
-        alg_analysis(WL -> stats, p_type);
+        alg_analysis(WL -> stats, p_type, prio_stat_map);
     }
 
     free(WL);

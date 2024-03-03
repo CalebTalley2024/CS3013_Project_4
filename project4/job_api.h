@@ -1,7 +1,10 @@
+#ifndef JOB_API_H
+#define JOB_API_H
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include "hashmap.h"
 
 // Helper macro for quick error checking.
 typedef struct job_node { // jobNode
@@ -17,6 +20,7 @@ typedef struct job_node { // jobNode
 
 typedef struct job_stats{
 	int id;
+	int prio;
 	int res_time;
 	int turnaround_time;
 	int wait_time;
@@ -57,14 +61,17 @@ print for each hashmap key
 
 
 Job *create_job(int id, int len, int prio);
-Finished_Job_Stats *create_job_stats(int id, int res_time, int turnaround_time, int wait_time);
+Finished_Job_Stats *create_job_stats(int id, int res_time, int turnaround_time, int wait_time, int prio);
 int add_job(Workload *workload, Job *new_job, const char type[]);
 int reverse_workload(Workload *workload);
 void print_workload(Workload *workload);
 int file_to_workload(char path[], Workload* WL, char p_type[]);
-int workload_exec(Workload *WL, int time_slice, char p_type[], int alg_only);
-int not_RR_exec(Workload * workload, int only_alg);
+int workload_exec(Workload *WL, int time_slice, char p_type[], int alg_only, HashMap *prio_stat_map);
+int not_RR_exec(Workload * workload, int only_alg, int is_prio, HashMap *prio_stat_map);
 int RR_exec(Workload *WL, int time_slice);
-int alg_analysis(Workload_Stats * WL_Stats, char p_type[]);
+int alg_analysis(Workload_Stats * WL_Stats, char p_type[], HashMap *prio_stat_map);
 int reverse_jobs_stats(Workload_Stats * WL_Stats);
 int edit_time(Workload_Stats * WL_Stats, int id, int time_type, int value);
+
+
+#endif // JOB_API_H
