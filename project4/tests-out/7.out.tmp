@@ -1,7 +1,7 @@
-Priority Type: FIFO
-The total # of Jobs 1
-
-Execution trace with FIFO:
-Job 0 ran for: 3
-End of execution with FIFO.
-Begin analyzing FIFO:
+Execution trace with RR:
+Job 0 ran for: 2
+Job 0 ran for: 2
+Job 0 ran for: 2
+Job 0 ran for: 2
+Job 0 ran for: 2
+End of execution with RR.

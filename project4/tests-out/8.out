@@ -1,10 +1,6 @@
-Priority Type: FIFO
-The total # of Jobs 1
-
-Execution trace with FIFO:
+Execution trace with RR:
 Job 0 ran for: 3
-End of execution with FIFO.
-Begin analyzing FIFO:
-Job 0 -- Response time: 0  Turnaround: 3  Wait: 0
-Average -- Response: 0.00  Turnaround: 3.00  Wait: 0.00
-End analyzing FIFO.
+Job 0 ran for: 3
+Job 0 ran for: 3
+Job 0 ran for: 1
+End of execution with RR.

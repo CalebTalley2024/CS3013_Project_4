@@ -19,10 +19,26 @@ PRIO edge case for printing stats
 wait time for completed job w/ Round Robin : total _time - initial_job_length
 Policy Analysis: Novel Workloads
 
-1: 5+ jobs, len = 4 (same as time slice)
-2: One big value followed by a series of ones
-3: 5+ jobs, len = multiple of 4
-4: Time slices are 4, maybe length is 80
-5: 3 9 24
+---------------------------------------------NOVEL WORKLOADS----------------------------------------------
+1: For our first novel workload we have 5 jobs of length 4. Having 5 equally sized jobs 
+   that are multiples of 4 causes each job to finish upon being reached for the first time.
+   This effectively makes each job's response time and wait time the same.
+2: For our second novel workload we have a job of length 200 followed by 19 jobs of
+   length 1. After analysis of FIFO and SJF, the resulting average turnaround time was
+   209.5 and 20.45 respectively (roughly a 10 times difference). The FIFO algorithm needs
+   to finish the long job first, making the turnaround time of the smaller jobs suffer,
+   while the SJF algorithm lets the shorter jobs have lower turnaround times because they
+   did not have to wait on the long job.
+3: Much like the first novel workload, the third has 5 jobs that are all length 4. 
+   Having 5 equally sized jobs that are multiples of 4 allows the RR algorithm to run the
+   same as FIFO and SJF. SJF and FIFO will be exactly the same in this case because every
+   job is the same length.
+4: For our fourth novel workload we have 5 jobs. The first four jobs are length 1, and the
+   fifth job is length 1000. Upon analyzing, the average turnaround time was 202.8 and the
+   average wait time was 2.
+5: Novel workload five has three jobs of length 3, 9, and 12. After analyzing the FIFO
+   algorithm with this workload, the average response time was 5 and the average turnaround
+   time was 13.
 
 Make sure all test cases 
+Make sure novel workloads are in correct folder

@@ -199,7 +199,7 @@ void print_workload(Workload *workload)
 int file_to_workload(char path[], Workload *WL, char p_type[])
 {
 
-	printf("Priority Type: %s\n", p_type); // print out priority queue type
+	//printf("Priority Type: %s\n", p_type); // print out priority queue type
 
 	// get info from file
 	FILE *fp = fopen(path, "r+");
@@ -268,17 +268,19 @@ int file_to_workload(char path[], Workload *WL, char p_type[])
 		reverse_workload(WL);
 	}
 
-	printf("The total # of Jobs %d\n\n", WL -> stats -> num_jobs);
+	//printf("The total # of Jobs %d\n", WL -> stats -> num_jobs);
 	return 0;
 }
 
 
-int workload_exec(Workload *WL, int time_slice, char p_type[]){
-	printf("Execution trace with %s:\n", p_type);
+int workload_exec(Workload *WL, int time_slice, char p_type[], int analysis_only){
+	if(analysis_only == 0){ //if we are not doing an analysis test only, print statements are included
+		printf("Execution trace with %s:\n", p_type);
+	}
 
     if(strcmp(p_type, "FIFO") == 0||strcmp(p_type, "SJF") == 0||strcmp(p_type, "PRIO") == 0){
 		//printf("I DONT SEE RROBIN \n");
-        not_RR_exec(WL);
+        not_RR_exec(WL, analysis_only);
     } else if(strcmp(p_type, "RR") == 0) {
 		//printf("I SEE RROBIN \n");
         RR_exec(WL, time_slice);
@@ -286,21 +288,25 @@ int workload_exec(Workload *WL, int time_slice, char p_type[]){
 		return 1;
 	}
 	
-	printf("End of execution with %s.\n", p_type);
+	if(analysis_only == 0){
+		printf("End of execution with %s.\n", p_type);
+	}
 	return 0;
 }
 
 
 // algorithm types that go through the entire linked list and complete jobs in order
 // this should be the type required for FIFO, SJF, and PRIO
-int not_RR_exec(Workload *WL)
+int not_RR_exec(Workload *WL, int analysis_only)
 {
 	Job *curr = WL->head;
 	//int i = 0;
 	Job *temp = NULL;
 	while (curr != NULL)
 	{
-		printf("Job %d ran for: %d\n", curr->id, curr->len);
+		if(analysis_only == 0){
+			printf("Job %d ran for: %d\n", curr->id, curr->len);
+		}
 		int prev_total_time = WL->stats->total_time;
 		WL->stats->total_time += curr->len;
 		// delete job 
