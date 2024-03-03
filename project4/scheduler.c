@@ -17,25 +17,29 @@
 
 
 int main(int argc, char **argv) { 
-
-
     // Array to store the numbers (adjust size as needed)
     // print_workload(workload);
-    char p_type[] = "SJF";
-    Workload *workload = (Workload *)malloc(sizeof(Workload));
+    char p_type[] = "PRIO";
+    Workload *WL = (Workload *)malloc(sizeof(Workload));
+    Workload_Stats *WL_stats = (Workload_Stats *)malloc(sizeof(Workload_Stats));
+    WL -> stats = WL_stats; // link stats
     char path[] = "tests/18.in";
 
-    workload -> total_time = 0;
+    // explicit init of total_time and initital time T
+    WL -> stats -> total_time = 0;
+    WL -> stats -> T = 0;
 
-    file_to_workload(path, workload, p_type);
+    file_to_workload(path, WL, p_type);
 
     // print_workload(workload);
 
     int time_slice = 10;
     
-    workload_exec(workload, time_slice, p_type);
+    workload_exec(WL, time_slice, p_type);
 
-    free(workload);
+    alg_analysis(WL -> stats, p_type);
+
+    free(WL);
 
     return 0;
 }

@@ -15,7 +15,10 @@ make && ./scheduler
 
 // delete(int value, char delete_type) //idx(i) or head(h)
 
+PRIO edge case for printing stats
+wait time for completed job w/ Round Robin : total _time - initial_job_length
 Policy Analysis: Novel Workloads
+
 1: 5+ jobs, len = 4 (same as time slice)
 2: One big value followed by a series of ones
 3: 5+ jobs, len = multiple of 4

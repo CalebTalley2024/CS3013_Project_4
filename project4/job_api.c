@@ -16,6 +16,17 @@ Job *create_job(int id, int len, int prio)
 	new_job->prio = prio;
 	return new_job;
 }
+
+// create job's stats  struct
+Finished_Job_Stats *create_job_stats(int id, int res_time, int turnaround_time, int wait_time){
+	Finished_Job_Stats * job_stats = (Finished_Job_Stats *) malloc(sizeof(Finished_Job_Stats));
+	
+	job_stats -> id = id;
+	job_stats -> res_time = res_time;
+	job_stats -> turnaround_time = turnaround_time;
+	job_stats -> wait_time = wait_time;
+	return job_stats;
+}
 // adds job
 // type: (FIFO, SJF, Priority,RR)
 /*
@@ -122,6 +133,23 @@ int reverse_workload(Workload *workload)
 	return 0;
 }
 
+int reverse_jobs_stats(Workload_Stats * WL_Stats)
+{
+	Finished_Job_Stats *head = WL_Stats->head;
+	Finished_Job_Stats *prev = NULL, *curr = head, *next_node;
+
+	while (curr != NULL)
+	{
+		next_node = curr->next; // shift to right
+		curr->next = prev;		// point to left
+		prev = curr;			// after init to head, shift to right
+		curr = next_node;		// shift to right
+	}
+	// at this point prev is the first job, and curr is null
+	WL_Stats->head = prev;
+	return 0;
+}
+
 // prints the list, line by line
 void print_workload(Workload *workload)
 {
@@ -134,7 +162,7 @@ void print_workload(Workload *workload)
 	printf("End of Load \n\n");
 }
 
-// makes a workload based on the parameter passed into it
+// makes a workload and workload stats based on the parameter passed into it
 // the parameter here should be a file path
 int file_to_workload(char path[], Workload *WL, char p_type[])
 {
@@ -156,14 +184,21 @@ int file_to_workload(char path[], Workload *WL, char p_type[])
 	char *token_buff;		  // token (split string) buffer
 	int id_buff = 0;		  // used to have id for job ( new job increments the id_buff)
 
-	// fgets(..) = NULL -----> end of a file
-	/*
- fgets does the following
- puts first line into buffer
- moves fp to point the next line of the file
- */
+	/* for each line of input....
+		- make a job object
+		- add job object to workload
+		- update workload stats
+			- num_jobs
+	
+	*/
 	while (fgets(line, max_line_size, fp) != NULL)
 	{ // read a line into line, till at the end of file
+		/* Explanation of fgets
+			// fgets(..) = NULL -----> end of a file
+			fgets does the following
+			puts first line into buffer
+			moves fp to point the next line of the file
+ 		*/
 		int i = 0;
 		// get split of line based on delimiter for " "
 		// these splits are called tokens
@@ -188,9 +223,11 @@ int file_to_workload(char path[], Workload *WL, char p_type[])
 		- the length (0th index)
 		- the prioirity (1st index or not there)
 		*/
-		// create the job
+		// create the job, update num_jobs
 		Job *a_job = create_job(id_buff++, line_nums[0], line_nums[1]); // increment buff job has already been created
-		add_job(WL, a_job, p_type);										// add the job to the workload
+		add_job(WL, a_job, p_type);	// add the job to the workload
+		WL -> stats -> num_jobs++;	
+
 	}
 	fclose(fp);
 	// if FIFO, reverse the workload (earliest job is first)
@@ -198,6 +235,8 @@ int file_to_workload(char path[], Workload *WL, char p_type[])
 	{
 		reverse_workload(WL);
 	}
+
+	printf("The total # of Jobs %d\n\n", WL -> stats -> num_jobs);
 	return 0;
 }
 
@@ -230,15 +269,32 @@ int not_RR_exec(Workload *WL)
 	while (curr != NULL)
 	{
 		printf("Job %d ran for: %d\n", curr->id, curr->len);
-		WL->total_time += curr->len;
+		int prev_total_time = WL->stats->total_time;
+		WL->stats->total_time += curr->len;
 		// delete job 
 		temp = curr;
 		WL->head = curr->next;
 		curr = curr->next;
+		temp -> T_s = prev_total_time;
+		temp -> T_c = WL->stats->total_time;
+		int res_time = temp -> T_s;
+		int turnaround_time = temp -> T_c;
+		int wait_time = temp -> T_s;
+
+		// if(WL -> stats -> head == NULL){
+		// 	WL->stats->head = create_job_stats(temp -> id, res_time, turnaround_time, wait_time);
+		// } else {
+		//create job stat, add stat to workload stat
+		 Finished_Job_Stats * new_head = create_job_stats(temp -> id, res_time, turnaround_time, wait_time);
+		 new_head -> next = WL->stats->head;
+		 WL->stats->head = new_head;
+		//}
+
 		free(temp);
 		//i++;
 	}
-	return WL->total_time;
+	reverse_jobs_stats(WL->stats);
+	return WL->stats->total_time;
 }
 
 // executing Round Robin function
@@ -262,14 +318,14 @@ int RR_exec(Workload *WL, int time_slice)
 			    // sleep(1); // sleep for 1 second
 				printf("Job %d ran for: %d\n", curr->id, time_slice);
 				curr->len -= time_slice;	  // remove a time_slice amount of time length from curr job
-				WL->total_time += time_slice; // add to total time of workload execution
+				WL -> stats -> total_time += time_slice; // add to total time of workload execution
 				
 			}
 			else
 			{								 // the time remaining is less than the time slice
 				printf("Job %d ran for: %d\n", curr->id, curr->len);
 				curr->len -= curr->len;		 // remove a time_slice amount of time length from curr job
-				WL->total_time += curr->len; // add to total time of workload execution
+				WL -> stats -> total_time += curr->len; // add to total time of workload execution
 				
 			}
 			/* if job has  len equal to 0,
@@ -295,11 +351,45 @@ int RR_exec(Workload *WL, int time_slice)
 				// if we dont need to delete job, prev shifts to the right
 				prev = temp; 
 			}
-			
-			
-			
 		}
 	}
 	// printf("End of execution with RR.\n");
+	return 0;
+}
+
+int alg_analysis(Workload_Stats * WL_Stats, char p_type[]){
+	printf("Begin analyzing %s:\n", p_type);
+	Finished_Job_Stats * curr = WL_Stats -> head;
+	//go through WL_stats head, and all nodes. As we iterate, we should
+	//print out the job number, res_time, turnaround_time, and wait_time
+	while(curr != NULL){
+		printf("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n", curr -> id, curr -> res_time, curr -> turnaround_time, curr -> wait_time);
+		WL_Stats -> total_res_time += curr -> res_time;
+		WL_Stats -> total_turnaround_time += curr -> turnaround_time;
+		WL_Stats -> total_wait_time += curr -> wait_time;
+		curr = curr -> next;
+		//printf("Number of Jobs: %d\n", WL_Stats -> num_jobs);
+	}
+	
+	float avg_response = (float)(WL_Stats -> total_res_time)/(WL_Stats -> num_jobs);
+	float avg_turnaround = (float)(WL_Stats -> total_turnaround_time)/(WL_Stats -> num_jobs);
+	printf("Total Wait: %d\n", WL_Stats -> total_wait_time);
+	printf("Number of Jobs: %d\n", WL_Stats -> num_jobs);
+	float avg_wait = (float)(WL_Stats -> total_wait_time)/(WL_Stats -> num_jobs);
+
+	/*
+	int a = 22;
+    int b = 7;
+    float c = (float)a/b;
+
+    printf("%.2f",c);
+    return 0;
+	
+	
+	*/
+
+	printf("Average -- Response: %.2f  Turnaround: %.2f  Wait: %.2f\n", avg_response, avg_turnaround, avg_wait);
+	printf("End analyzing %s.\n", p_type);
+
 	return 0;
 }
