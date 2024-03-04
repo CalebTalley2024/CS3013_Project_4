@@ -6,6 +6,10 @@
 #include <errno.h>
 #include "hashmap.h"
 
+#define MAX_UNIQUE_PRIOS 10// test 18 has 3 different prios, we just add 10 just in case
+
+
+
 // Helper macro for quick error checking.
 typedef struct job_node { // jobNode
 		int id;
@@ -37,6 +41,17 @@ typedef struct workload_stats{
 	int total_wait_time;
 	int total_turnaround_time;
 	int num_jobs;
+
+	int unique_prios[MAX_UNIQUE_PRIOS];// list of all of the unique priorities
+	/*
+	unique_prios[1] = 1
+
+	there exists a priority 1
+	unique_prios[0] = 0
+
+	there d.n.e a pirority 0
+	*/
+
 }Workload_Stats;
 
 typedef struct Workload{

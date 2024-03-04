@@ -52,34 +52,60 @@ int hashmap_update(HashMap *map, int *prio, float * res_time,float * turnaround_
     while (existing_entry != NULL){
         // check if an entry that should have a certain prio is shifted
         // this would happen if there were multiple entries with the same prio
-        if (existing_entry->prio == prio){
+        if (*(existing_entry->prio) == *prio){
+            // printf("    prio: %d\n",*prio);
+            // printf("    res_time: %0.2f\n", *res_time);
+            // printf("    turnaround_time: %0.2f\n", *turnaround_time);
+            // printf("    wait_time: %0.2f\n", *wait_time);
+
+            // printf("        total_res_time: %0.2f\n", *existing_entry->total_res_time);
+            // printf("        total_turnaround_time: %0.2f\n", *existing_entry->total_turnaround_time);
+            // printf("        total_wait_time: %0.2f\n", *existing_entry->total_wait_time);
             *existing_entry->total_res_time += *res_time;
             *existing_entry->total_turnaround_time += *turnaround_time;
             *existing_entry->total_wait_time += *wait_time;
+            // printf("        total_res_time: %0.2f\n", *existing_entry->total_res_time);
+            // printf("        total_turnaround_time: %0.2f\n", *existing_entry->total_turnaround_time);
+            // printf("        total_wait_time: %0.2f\n", *existing_entry->total_wait_time);
 
             (*existing_entry->num_jobs_completed)++; // add to the amount of completed jobs
             return 0;
         }
-        existing_entry = existing_entry->next;
+        // existing_entry = existing_entry->next;
     }
 
-    printf("New entry created for prio: %d\n",*prio);
+    // printf("New entry created for prio: %d\n",*prio);
     // If prio not found, make new entry
     Entry *new_entry = (Entry*)malloc(sizeof(Entry));
-    new_entry -> prio = malloc(sizeof(int));
-    *(new_entry -> prio) = *prio; // Copy the value of the prio
-    new_entry->prio = prio;
-    new_entry->total_res_time = res_time;
-    new_entry->total_turnaround_time = turnaround_time;
-    new_entry->total_wait_time = wait_time;
+
+    new_entry->prio = malloc(sizeof(int));
+    new_entry->total_res_time = malloc(sizeof(float));  // Allocate memory for the new entry
+    new_entry->total_turnaround_time = malloc(sizeof(float));
+    new_entry->total_wait_time = malloc(sizeof(float));
+    new_entry->num_jobs_completed = malloc(sizeof(int));
+
+    *new_entry->prio = *prio;
+    *new_entry->total_res_time = *res_time;
+    *new_entry->total_turnaround_time = *turnaround_time;
+    *new_entry->total_wait_time = *wait_time;
     // if prio not found, slide this new entry ahead of the entry at table[idx]
     new_entry->next = map-> table[idx];
     map->table[idx] = new_entry;
     new_entry->num_jobs_completed = malloc(sizeof(int)); // add to the amount of completed jobs
     *(new_entry->num_jobs_completed) = 1;
 
+
+    // printf("    prio: %d\n",*prio);
+    // printf("    res_time: %0.2f\n", *res_time);
+    // printf("    turnaround_time: %0.2f\n", *turnaround_time);
+    // printf("    wait_time: %0.2f\n", *wait_time);
+    // printf("        total_res_time: %0.2f\n", *new_entry->total_res_time);
+    // printf("        total_turnaround_time: %0.2f\n", *new_entry->total_turnaround_time);
+    // printf("        total_wait_time: %0.2f\n", *new_entry->total_wait_time);
     return 0;
 }
+
+
 // get entry
 Entry* hashmap_get(HashMap *map, int *prio){
     unsigned long idx = hash(prio);
@@ -118,7 +144,7 @@ int print_entry_avg_time_stats(Entry * entry){
     float avg_total_res_time = *(entry->total_res_time)/num_jobs_prio;
     float avg_total_turnaround_time = *(entry->total_turnaround_time) / num_jobs_prio;
     float avg_total_wait_time = *(entry->total_wait_time) / num_jobs_prio;
-    printf("Priority %d: Average -- Response : %0.2f Turnaround : %0.2f Wait : %0.2f\n",
+    printf("Priority %d: Average -- Response: %0.2f  Turnaround: %0.2f  Wait: %0.2f\n",
            *entry -> prio, avg_total_res_time, avg_total_turnaround_time, avg_total_wait_time);
     return 0;
 }

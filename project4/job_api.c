@@ -276,7 +276,7 @@ int file_to_workload(char path[], Workload *WL, char p_type[])
 
 
 int workload_exec(Workload *WL, int time_slice, char p_type[], int analysis_only, HashMap *prio_stat_map){
-	if(analysis_only == 0){ //if we are not doing an analysis test only, print statements are included
+	if(analysis_only == 0 || strcmp(p_type, "PRIO") == 0){ //if we are not doing an analysis test only, print statements are included // also prio is weird
 		printf("Execution trace with %s:\n", p_type);
 	}
 
@@ -285,10 +285,17 @@ int workload_exec(Workload *WL, int time_slice, char p_type[], int analysis_only
 		int is_prio;
 		if(strcmp(p_type, "PRIO") == 0){
 			is_prio = 1;
+			not_RR_exec(WL, 0, is_prio, prio_stat_map);
 		} else {
 			is_prio = 0;
+			not_RR_exec(WL, analysis_only, is_prio, prio_stat_map);
 		}
-        not_RR_exec(WL, analysis_only, is_prio, prio_stat_map);
+		// if(){
+		// 	not_RR_exec(WL, analysis_only, is_prio, prio_stat_map);
+		// } else {
+        // 	not_RR_exec(WL, analysis_only, is_prio, prio_stat_map);
+		// }
+		//not_RR_exec(WL, analysis_only, is_prio, prio_stat_map);
     } else if(strcmp(p_type, "RR") == 0) {
 		//printf("I SEE RROBIN \n");
         RR_exec(WL, time_slice);
@@ -296,7 +303,7 @@ int workload_exec(Workload *WL, int time_slice, char p_type[], int analysis_only
 		return 1;
 	}
 	
-	if(analysis_only == 0){
+	if(analysis_only == 0 || strcmp(p_type, "PRIO") == 0){
 		printf("End of execution with %s.\n", p_type);
 	}
 	return 0;
@@ -334,12 +341,30 @@ int not_RR_exec(Workload *WL, int analysis_only, int is_prio, HashMap *prio_stat
 		//create job stat, add stat to workload stat
 		 Finished_Job_Stats * new_head = create_job_stats(temp -> id, res_time, turnaround_time, wait_time, temp->prio);
 		 
-		 if(is_prio){
-			hashmap_update(prio_stat_map, &new_head -> prio, &res_time, &turnaround_time, &wait_time);
+		 if(is_prio){ // if the type is prio
+			int *prio = &new_head -> prio;
+			int *unique_prios = WL -> stats -> unique_prios;
+			unique_prios[*prio] = 1;
+			// printf("\n\nunique_prios[%d] = 1;\n\n", *prio); 
+			hashmap_update(prio_stat_map, prio, &res_time, &turnaround_time, &wait_time);
 			new_head -> prio = temp -> prio;
-			
+			/*
+			// if(prio_num[curr->prio] == NULL){
+			//     num_of_prios;
+			//     Prio_Entry *new_prio;
+			//     new_prio->num_of_prios = 1;
+			//     new_prio->total_res_time = curr->res_time;
+			//     new_prio->total_turnaround_time = curr->turnaround_time;
+			//     new_prio->total_wait_time = curr->wait_time;
+			//     prio_num[curr->prio] = new_prio;
+			// } else {
+			//     prio_num[curr->prio] -> num_of_prios++;
+			//     prio_num[curr->prio] -> total_res_time += curr->res_time;
+			//     prio_num[curr->prio] -> total_turnaround_time += curr->turnaround_time;
+			//     prio_num[curr->prio] -> total_wait_time += curr->wait_time;
+			// }
+			*/
 		 }
-		 
 		 new_head -> next = WL->stats->head;
 		 WL->stats->head = new_head;
 		//}
@@ -439,16 +464,29 @@ int alg_analysis(Workload_Stats * WL_Stats, char p_type[], HashMap *prio_stat_ma
 	// if we have p_type == prio, we print the avg times for each different priority
 	if (strcmp(p_type, "PRIO") == 0){
 		// for each job_state node
-		Finished_Job_Stats * curr_stats = WL_Stats->head;
+		// Finished_Job_Stats * curr_stats = WL_Stats->head;
 
-		while (curr_stats != NULL){
-			// get the entry with the stat's prio
-			int * prio = &curr_stats -> prio;
-			Entry *an_entry = hashmap_get(prio_stat_map, prio);
-			// print out the average
-			print_entry_avg_time_stats(an_entry);
-			curr_stats = curr_stats -> next;
+		for (int prio = 1; prio< MAX_UNIQUE_PRIOS; prio++){
+			
+			int *prio_status = &WL_Stats -> unique_prios[prio];
+
+			if (*prio_status == 1){ // this means that the prio at this iteration is used in the test
+				// printf("prio: %d\n", prio);
+				Entry *an_entry = hashmap_get(prio_stat_map, &prio);
+				print_entry_avg_time_stats(an_entry);
+			}
+
+			
 		}
+
+		// while (curr_stats != NULL){
+		// 	// get the entry with the stat's prio
+		// 	int * prio = &curr_stats -> prio;
+			
+		// 	// print out the average
+			
+		// 	curr_stats = curr_stats -> next;
+		// }
 	}
 
 

@@ -105,15 +105,14 @@ wait_time: Same as res_time, but for wait time.
 next: A pointer to the next job_stats node.
 
 
-typedef struct Entry{
-    int * num_jobs_completed;
-    int * prio;
-    int * total_res_time;
-    int * total_turnaround_time;
-    int * total_wait_time;
+typedef struct Entry {
+    float *num_jobs_completed;
+    int *prio;
+    float *total_res_time;
+    float *total_turnaround_time;
+    float *total_wait_time;
     struct Entry *next;
 }Entry;
-
 stuff
 
 
@@ -129,6 +128,7 @@ stuff
 
 
 ---------------------------------------NOVEL WORKLOADS---------------------------------------
+All workloads are in the "novel_workloads" folder
 1: For our first novel workload we have 5 jobs of length 4. Having 5 equally sized jobs 
    that are multiples of 4 causes each job to finish upon being reached for the first time.
    This effectively makes each job's response time and wait time the same.
@@ -149,6 +149,3 @@ stuff
    algorithm with this workload, the average response time was 5 and the average turnaround
    time was 13.
 ---------------------------------------------------------------------------------------------
-
-Make sure all test cases 
-Make sure novel workloads are in correct folder
