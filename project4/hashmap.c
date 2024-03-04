@@ -8,27 +8,14 @@
 #include "hashmap.h"
 
 #define MAX_NUM_ENTRIES 1000 // maximum size of hash table
-// hashmap entry
-// typedef struct Entry{
-//     int * num_jobs_completed;
-//     int * prio;
-//     int * total_res_time;
-//     int * total_turnaround_time;
-//     int * total_wait_time;
-//     struct Entry *next;
-// }Entry;
-
-// typedef struct HashMap {
-//     Entry **table; //@ caleb: why use two pointers
-// }HashMap;
-
-
 
 // Key: prio
+// basic hashing function
 unsigned long hash(int *prio){
     return *prio % MAX_NUM_ENTRIES;
 }
 
+// create a hashmap
 HashMap* create_hashmap(int num_entries) {
     HashMap *map = (HashMap*)malloc(sizeof(HashMap));
     if (map == NULL){return NULL;}
@@ -41,8 +28,6 @@ HashMap* create_hashmap(int num_entries) {
     return map;
 }
 
-
-
 // updates/add the values of an entry given a prio (the priority)
 int hashmap_update(HashMap *map, int *prio, float * res_time,float * turnaround_time, float * wait_time){
     // prio --> idx
@@ -50,63 +35,40 @@ int hashmap_update(HashMap *map, int *prio, float * res_time,float * turnaround_
     // get the entry * at the location of the idx
     Entry * existing_entry = map->table[idx];
     while (existing_entry != NULL){
-        // check if an entry that should have a certain prio is shifted
-        // this would happen if there were multiple entries with the same prio
         if (*(existing_entry->prio) == *prio){
-            // printf("    prio: %d\n",*prio);
-            // printf("    res_time: %0.2f\n", *res_time);
-            // printf("    turnaround_time: %0.2f\n", *turnaround_time);
-            // printf("    wait_time: %0.2f\n", *wait_time);
-
-            // printf("        total_res_time: %0.2f\n", *existing_entry->total_res_time);
-            // printf("        total_turnaround_time: %0.2f\n", *existing_entry->total_turnaround_time);
-            // printf("        total_wait_time: %0.2f\n", *existing_entry->total_wait_time);
+            // update total times
             *existing_entry->total_res_time += *res_time;
             *existing_entry->total_turnaround_time += *turnaround_time;
             *existing_entry->total_wait_time += *wait_time;
-            // printf("        total_res_time: %0.2f\n", *existing_entry->total_res_time);
-            // printf("        total_turnaround_time: %0.2f\n", *existing_entry->total_turnaround_time);
-            // printf("        total_wait_time: %0.2f\n", *existing_entry->total_wait_time);
 
             (*existing_entry->num_jobs_completed)++; // add to the amount of completed jobs
             return 0;
         }
-        // existing_entry = existing_entry->next;
     }
 
-    // printf("New entry created for prio: %d\n",*prio);
-    // If prio not found, make new entry
+    // If entry for prio not found, make new entry
+    // allocate memory
     Entry *new_entry = (Entry*)malloc(sizeof(Entry));
-
     new_entry->prio = malloc(sizeof(int));
     new_entry->total_res_time = malloc(sizeof(float));  // Allocate memory for the new entry
     new_entry->total_turnaround_time = malloc(sizeof(float));
     new_entry->total_wait_time = malloc(sizeof(float));
     new_entry->num_jobs_completed = malloc(sizeof(int));
 
+    // initialize pointers with parameter time values
     *new_entry->prio = *prio;
     *new_entry->total_res_time = *res_time;
     *new_entry->total_turnaround_time = *turnaround_time;
     *new_entry->total_wait_time = *wait_time;
-    // if prio not found, slide this new entry ahead of the entry at table[idx]
-    new_entry->next = map-> table[idx];
+    *new_entry->num_jobs_completed = 1;
+
+    // make the table pointer at idx prio point to new_entry
     map->table[idx] = new_entry;
-    new_entry->num_jobs_completed = malloc(sizeof(int)); // add to the amount of completed jobs
-    *(new_entry->num_jobs_completed) = 1;
-
-
-    // printf("    prio: %d\n",*prio);
-    // printf("    res_time: %0.2f\n", *res_time);
-    // printf("    turnaround_time: %0.2f\n", *turnaround_time);
-    // printf("    wait_time: %0.2f\n", *wait_time);
-    // printf("        total_res_time: %0.2f\n", *new_entry->total_res_time);
-    // printf("        total_turnaround_time: %0.2f\n", *new_entry->total_turnaround_time);
-    // printf("        total_wait_time: %0.2f\n", *new_entry->total_wait_time);
     return 0;
 }
 
 
-// get entry
+// get Entry struct using the priority/key
 Entry* hashmap_get(HashMap *map, int *prio){
     unsigned long idx = hash(prio);
     Entry *entry = map -> table[idx];
@@ -120,27 +82,14 @@ Entry* hashmap_get(HashMap *map, int *prio){
     return NULL;
 }
 
-// free memory from hashmap
-void free_hashmap(HashMap *map){
-    // remove entry memory
-    for (int i = 0; i< MAX_NUM_ENTRIES; i++){
-        Entry *entry = map -> table[i];
-        while (entry != NULL){
-            Entry *next  = entry -> next;
-            free (entry);
-            entry = next;
-        }
-    }
-    free(map -> table);
-    free(map);
-}
-
+// prints the average response time, turnaround time, and wait time for each separate priority level
 int print_entry_avg_time_stats(Entry * entry){
     if (entry == NULL) {
         perror("Error: Entry is NULL\n");
         return -1;  // Or handle the error in an appropriate way
     }
     float num_jobs_prio = *(entry ->num_jobs_completed);
+    // calculate averages
     float avg_total_res_time = *(entry->total_res_time)/num_jobs_prio;
     float avg_total_turnaround_time = *(entry->total_turnaround_time) / num_jobs_prio;
     float avg_total_wait_time = *(entry->total_wait_time) / num_jobs_prio;

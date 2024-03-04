@@ -22,6 +22,7 @@ typedef struct job_node { // jobNode
 		struct job_node*next;
 }Job;
 
+//struct that tracks each jobs' stats. This is important for analysis of algorithms.
 typedef struct job_stats{
 	int id;
 	int prio;
@@ -31,7 +32,7 @@ typedef struct job_stats{
 	struct job_stats *next;
 }Finished_Job_Stats;
 
-
+//Has the beginning of a linked list of job_stats, and also keeps track of "total" values
 typedef struct workload_stats{
 	Finished_Job_Stats *head;
 	int T; // workload initial time 
@@ -41,7 +42,6 @@ typedef struct workload_stats{
 	int total_wait_time;
 	int total_turnaround_time;
 	int num_jobs;
-
 	int unique_prios[MAX_UNIQUE_PRIOS];// list of all of the unique priorities
 	/*
 	unique_prios[1] = 1
@@ -51,12 +51,11 @@ typedef struct workload_stats{
 
 	there d.n.e a pirority 0
 	*/
-
 }Workload_Stats;
 
+//This contains the start of the linked list of Jobs, and also includes a Workload_Stats struct.
 typedef struct Workload{
     Job *head;
-
 	Workload_Stats *stats;
 }Workload;
 
@@ -87,6 +86,5 @@ int RR_exec(Workload *WL, int time_slice);
 int alg_analysis(Workload_Stats * WL_Stats, char p_type[], HashMap *prio_stat_map);
 int reverse_jobs_stats(Workload_Stats * WL_Stats);
 int edit_time(Workload_Stats * WL_Stats, int id, int time_type, int value);
-
 
 #endif // JOB_API_H

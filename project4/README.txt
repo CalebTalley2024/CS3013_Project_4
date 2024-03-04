@@ -1,3 +1,4 @@
+----------------------------Project 4 by Caleb Talley & Chris Smith----------------------------
 In this directory, you should write the program `scheduler.c` and compile it into the binary `scheduler` using `make`. You should do it inside the Ubuntu machine you have setup, as grading will be done so inside the Ubuntu.
 
 After doing so, you can run the tests from this directory by running the
@@ -8,17 +9,6 @@ Note that the test cases are expecting exact matches in string formatting and wh
 Passing all tests are not sufficient to obtain all points for this assignment. As an example, any assignment in which hardcodes the expected output to pass the test case will lead to point deductions.
 
 
-make && ./scheduler
-
-// @caleb notes
-// print_workload
-
-// delete(int value, char delete_type) //idx(i) or head(h)
-
-PRIO edge case for printing stats
-wait time for completed job w/ Round Robin : total _time - initial_job_length
-Policy Analysis: Novel Workloads
-
 ---------------------------------------DATA STRUCTURES---------------------------------------
 We used a linked list implementation for creating workloads. We have a struct that is called
 Workload and one that is called job_node. The Workload struct contains the head of the linked
@@ -28,6 +18,10 @@ analysis of the Workload algorithms used. The Workload_Stats struct is, just lik
 Workload struct, a linked list. The node struct for Workload_Stats is called job_stats. Now
 that the explanation of how the linked lists are made is done, further explanation is needed
 to explain the different fields of each struct.
+
+For PRIO statistics specifically, we decided to use HashMaps for storing our data. 
+Each entry of hte hashmap represents a unique prioirity levels statistics. 
+For each of these hashmaps, we calculate the average for the required statstics and print out the required output.
 
 typedef struct Workload{
     Job *head;
@@ -75,6 +69,7 @@ typedef struct workload_stats{
 	int total_wait_time;
 	int total_turnaround_time;
 	int num_jobs;
+   int unique_prios[]
 }Workload_Stats;
 
 head: A pointer to the first job_stats of the linked list.
@@ -88,6 +83,11 @@ total_wait_time: The same as total_res_time but for wait times.
 total_turnaround_time: The same as total_res_time but for turnaround time.
 num_jobs: Contains the total number of jobs. This is used for calculating the averages of
           response time, wait time, and turnaround time.
+unique_prios[]: list to help determine what the unique priority values the workload has. 
+               The index represents the priority level, the value represents whether the
+               workload has said priority level or not, with 1 and 0 respectively. For example,
+               if we have unique_prios[2] = 1, this means that there exists a job that has
+               priority level 2.
 
 
 typedef struct job_stats{
@@ -113,14 +113,21 @@ typedef struct Entry {
     float *total_wait_time;
     struct Entry *next;
 }Entry;
-stuff
+
+Entry: Represents a workload's statistical data separated by priority
+num_jobs_completed: total number of jobs completed that have `prio` as their priority
+prio: The associated priority
+total_res_time: sum total of response time with this priority
+total_turnaround_time: sum total of turnaround time with this priority
+total_wait_time: sum total of wait_time for jobs with this priority
+next: Points to the next Entry
 
 
 typedef struct HashMap {
     Entry **table;
 } HashMap;
 
-stuff
+table: represents a table of Entry pointers. These pointers make up the HashMap
 ---------------------------------------------------------------------------------------------
 
 
@@ -149,3 +156,6 @@ All workloads are in the "novel_workloads" folder
    algorithm with this workload, the average response time was 5 and the average turnaround
    time was 13.
 ---------------------------------------------------------------------------------------------
+
+---------------------------------------Other---------------------------------------
+Image for proof that our project works: 'all_test_passed.png'

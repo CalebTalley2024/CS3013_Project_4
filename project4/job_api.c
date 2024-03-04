@@ -5,8 +5,19 @@
 #include <unistd.h>
 #include "job_api.h"
 
+/*
+	This function is for use with RR_exec(...), and its job is to edit either turnaround time or wait time
+	of a Finished_Job_Stats of the specified id.
 
-//if 0, edit turnaround time, if 1, edit wait time
+	Parameters:
+	WL_Stats: This is the Workload_Stats struct that contains the information needed for alg_analysis(...)
+	id: The int id of the Finished_Job_Stats that we want to change.
+	time_type: An integer value that is either 0 or 1. If 0, change turnaround_time of the Finished_Job_Stats
+	           that has the specified id.
+	value: The number that is being given to the field (aka. what we are editing the field to)
+
+	return: 0 if successful, -1 if error.
+*/
 int edit_time(Workload_Stats * WL_Stats, int id, int time_type, int value){
 	Finished_Job_Stats * curr = WL_Stats->head;
 	while(curr != NULL){
@@ -28,6 +39,17 @@ int edit_time(Workload_Stats * WL_Stats, int id, int time_type, int value){
 	return -1;
 }
 
+/*
+	create_job initializes a new Job
+
+	Parameters:
+	id: An int value that represents which Job it is. This will be done in
+	len: The length of the Job being creating.
+	prio: Sets a priority for the job. This is for the PRIO algorithm if it
+	      is used.
+
+	return: a pointer to the Job that was created.
+*/
 Job *create_job(int id, int len, int prio)
 { // creates job node
 	Job *new_job = (Job *)malloc(sizeof(Job));
@@ -39,8 +61,6 @@ Job *create_job(int id, int len, int prio)
 	new_job->next = NULL;
 	new_job->prio = prio;
 	new_job->first_access = 0;
-
-	
 	return new_job;
 }
 
@@ -61,7 +81,6 @@ Finished_Job_Stats *create_job_stats(int id, int res_time, int turnaround_time, 
  */
 int add_job(Workload *workload, Job *new_job, const char p_type[])
 { // by default, adds job to the head of the list
-
 	if (workload->head == NULL)
 	{ // if there are no jobs in the workload, simply put job in
 		new_job->next = workload->head;
@@ -70,7 +89,6 @@ int add_job(Workload *workload, Job *new_job, const char p_type[])
 	}
 	if ((strcmp(p_type, "FIFO") == 0) || (strcmp(p_type, "RR") == 0))
 	{
-
 		new_job->next = workload->head;
 		workload->head = new_job;
 		return 0;
@@ -99,7 +117,6 @@ int add_job(Workload *workload, Job *new_job, const char p_type[])
 					return 0;
 				}
 				new_job->next = curr;
-
 				if (prev != NULL)
 				{
 					prev->next = new_job;
@@ -121,7 +138,6 @@ int add_job(Workload *workload, Job *new_job, const char p_type[])
 		{ // until we go through whole list
 			// get length of new job and current job
 			int curr_prio = curr->prio;
-			// printf("is %d < %d? \n",curr_prio,new_job_prio);
 			if (curr_prio <= new_job_prio) // if job is larger than curr job, consider next job
 			{							   // check if new_job len is less than curr
 				prev = curr;
@@ -167,6 +183,9 @@ int reverse_workload(Workload *workload)
 	return 0;
 }
 
+/*
+	Reverses the order of the Workload_Stats struct given.
+*/
 int reverse_jobs_stats(Workload_Stats * WL_Stats)
 {
 	Finished_Job_Stats *head = WL_Stats->head;
@@ -200,9 +219,6 @@ void print_workload(Workload *workload)
 // the parameter here should be a file path
 int file_to_workload(char path[], Workload *WL, char p_type[])
 {
-
-	//printf("Priority Type: %s\n", p_type); // print out priority queue type
-
 	// get info from file
 	FILE *fp = fopen(path, "r+");
 	if (fp == NULL)
@@ -269,19 +285,25 @@ int file_to_workload(char path[], Workload *WL, char p_type[])
 	{
 		reverse_workload(WL);
 	}
-
-	//printf("The total # of Jobs %d\n", WL -> stats -> num_jobs);
 	return 0;
 }
 
+/*
+	A helper function that will execute the proper algorithm and give the output desired besed on the tests/#.out template
 
+	Parameters:
+	WL: Pointer to the workload we are working with.
+	p_type: A string that describes the algorithm we want.
+	analysis_only: If this int is 1, that means we only want to show results for algorithm analysis, not the actual
+	               result of the algorithm. Also, PRIO ignores this and will always print both the result and analysis.
+	prio_stat_map: Pointer to hash map for PRIO implementation.
+*/
 int workload_exec(Workload *WL, int time_slice, char p_type[], int analysis_only, HashMap *prio_stat_map){
 	if(analysis_only == 0 || strcmp(p_type, "PRIO") == 0){ //if we are not doing an analysis test only, print statements are included // also prio is weird
 		printf("Execution trace with %s:\n", p_type);
 	}
 
     if(strcmp(p_type, "FIFO") == 0||strcmp(p_type, "SJF") == 0||strcmp(p_type, "PRIO") == 0){
-		//printf("I DONT SEE RROBIN \n");
 		int is_prio;
 		if(strcmp(p_type, "PRIO") == 0){
 			is_prio = 1;
@@ -290,14 +312,7 @@ int workload_exec(Workload *WL, int time_slice, char p_type[], int analysis_only
 			is_prio = 0;
 			not_RR_exec(WL, analysis_only, is_prio, prio_stat_map);
 		}
-		// if(){
-		// 	not_RR_exec(WL, analysis_only, is_prio, prio_stat_map);
-		// } else {
-        // 	not_RR_exec(WL, analysis_only, is_prio, prio_stat_map);
-		// }
-		//not_RR_exec(WL, analysis_only, is_prio, prio_stat_map);
     } else if(strcmp(p_type, "RR") == 0) {
-		//printf("I SEE RROBIN \n");
         RR_exec(WL, time_slice);
 	} else {
 		return 1;
@@ -335,42 +350,21 @@ int not_RR_exec(Workload *WL, int analysis_only, int is_prio, HashMap *prio_stat
 		float wait_time = temp -> T_s;
 		// update the hashmap, this will update the stats for each priority based entry
 
-		// if(WL -> stats -> head == NULL){
-		// 	WL->stats->head = create_job_stats(temp -> id, res_time, turnaround_time, wait_time);
-		// } else {
 		//create job stat, add stat to workload stat
-		 Finished_Job_Stats * new_head = create_job_stats(temp -> id, res_time, turnaround_time, wait_time, temp->prio);
+		Finished_Job_Stats * new_head = create_job_stats(temp -> id, res_time, turnaround_time, wait_time, temp->prio);
 		 
-		 if(is_prio){ // if the type is prio
+		if(is_prio){ // if the type is prio
 			int *prio = &new_head -> prio;
 			int *unique_prios = WL -> stats -> unique_prios;
 			unique_prios[*prio] = 1;
 			// printf("\n\nunique_prios[%d] = 1;\n\n", *prio); 
 			hashmap_update(prio_stat_map, prio, &res_time, &turnaround_time, &wait_time);
 			new_head -> prio = temp -> prio;
-			/*
-			// if(prio_num[curr->prio] == NULL){
-			//     num_of_prios;
-			//     Prio_Entry *new_prio;
-			//     new_prio->num_of_prios = 1;
-			//     new_prio->total_res_time = curr->res_time;
-			//     new_prio->total_turnaround_time = curr->turnaround_time;
-			//     new_prio->total_wait_time = curr->wait_time;
-			//     prio_num[curr->prio] = new_prio;
-			// } else {
-			//     prio_num[curr->prio] -> num_of_prios++;
-			//     prio_num[curr->prio] -> total_res_time += curr->res_time;
-			//     prio_num[curr->prio] -> total_turnaround_time += curr->turnaround_time;
-			//     prio_num[curr->prio] -> total_wait_time += curr->wait_time;
-			// }
-			*/
-		 }
-		 new_head -> next = WL->stats->head;
-		 WL->stats->head = new_head;
-		//}
+		}
+		new_head -> next = WL->stats->head;
+		WL->stats->head = new_head;
 
 		free(temp);
-		//i++;
 	}
 	reverse_jobs_stats(WL->stats);
 	return 0;
@@ -380,8 +374,6 @@ int not_RR_exec(Workload *WL, int analysis_only, int is_prio, HashMap *prio_stat
 // time slice: how much time goes by with each iteration
 int RR_exec(Workload *WL, int time_slice)
 {
-	// printf("Execution trace with RR:\n");
-	// Job * prev;
 	//  while loop till all WL is empty
 	while (WL->head != NULL)
 	{
@@ -399,42 +391,33 @@ int RR_exec(Workload *WL, int time_slice)
 				new_head -> next = WL->stats->head; // add to list
 		 		WL->stats->head = new_head;
 			}
-			// printf("curr->id: %d\ncurr->len: %d\ntime_slice: %d\n\n", curr->id, curr->len, time_slice);
 			if (time_slice <= curr->len)
 			{
-			    // sleep(1); // sleep for 1 second
 				printf("Job %d ran for: %d\n", curr->id, time_slice);
 				curr->len -= time_slice;	  // remove a time_slice amount of time length from curr job
 				WL -> stats -> total_time += time_slice; // add to total time of workload execution
-				
 			}
 			else
 			{								 // the time remaining is less than the time slice
 				printf("Job %d ran for: %d\n", curr->id, curr->len);
 				WL -> stats -> total_time += curr->len; // add to total time of workload execution
 				curr->len -= curr->len;		 // remove a time_slice amount of time length from curr job
-				
 			}
 			/* if job has  len equal to 0,
 				- remove it
-				*/
+			*/
 			temp = curr;
 			curr = curr->next;
 			if (temp->len == 0) 
 			{
 				int wait_time = (WL->stats->total_time) - (temp->init_len);
-				//printf("Total time: %d\n", WL->stats->total_time);
 				edit_time(WL->stats, temp->id, 0, WL->stats->total_time);
 				edit_time(WL->stats, temp->id, 1, wait_time);
 				if (prev != NULL){
 					prev -> next = curr;
 				} else {// at the head
-					// temp = curr;
 					WL->head = curr;
-					// curr = curr->next;
-
 				}
-				// printf("Job %d has been deleted\n",temp -> id);
 				free(temp);
 			}
 			else{
@@ -444,10 +427,17 @@ int RR_exec(Workload *WL, int time_slice)
 		}
 	}
 	reverse_jobs_stats(WL->stats);
-	// printf("End of execution with RR.\n");
 	return 0;
 }
 
+/*
+	Shows the analysis of the Workload we had and the algorithm type used.
+
+	Parameters:
+	WL_Stats: Pointer to the Workload_Stats linked list necessary to retrieve the analysis data.
+	p_type: A string of which algorithm was used in completing Jobs.
+	prio_stat_map: Pointer to hash map needed for PRIO.
+*/
 int alg_analysis(Workload_Stats * WL_Stats, char p_type[], HashMap *prio_stat_map){
 	printf("Begin analyzing %s:\n", p_type);
 	Finished_Job_Stats * curr = WL_Stats -> head;
@@ -459,7 +449,6 @@ int alg_analysis(Workload_Stats * WL_Stats, char p_type[], HashMap *prio_stat_ma
 		WL_Stats -> total_turnaround_time += curr -> turnaround_time;
 		WL_Stats -> total_wait_time += curr -> wait_time;
 		curr = curr -> next;
-		//printf("Number of Jobs: %d\n", WL_Stats -> num_jobs);
 	}
 	// if we have p_type == prio, we print the avg times for each different priority
 	if (strcmp(p_type, "PRIO") == 0){
@@ -471,30 +460,14 @@ int alg_analysis(Workload_Stats * WL_Stats, char p_type[], HashMap *prio_stat_ma
 			int *prio_status = &WL_Stats -> unique_prios[prio];
 
 			if (*prio_status == 1){ // this means that the prio at this iteration is used in the test
-				// printf("prio: %d\n", prio);
 				Entry *an_entry = hashmap_get(prio_stat_map, &prio);
 				print_entry_avg_time_stats(an_entry);
 			}
-
-			
 		}
-
-		// while (curr_stats != NULL){
-		// 	// get the entry with the stat's prio
-		// 	int * prio = &curr_stats -> prio;
-			
-		// 	// print out the average
-			
-		// 	curr_stats = curr_stats -> next;
-		// }
 	}
-
-
 
 	float avg_response = (float)(WL_Stats -> total_res_time)/(WL_Stats -> num_jobs);
 	float avg_turnaround = (float)(WL_Stats -> total_turnaround_time)/(WL_Stats -> num_jobs);
-	// printf("Total Wait: %d\n", WL_Stats -> total_wait_time);
-	// printf("Number of Jobs: %d\n", WL_Stats -> num_jobs);
 	float avg_wait = (float)(WL_Stats -> total_wait_time)/(WL_Stats -> num_jobs);
 
 	/* example for float -> int
@@ -511,7 +484,3 @@ int alg_analysis(Workload_Stats * WL_Stats, char p_type[], HashMap *prio_stat_ma
 
 	return 0;
 }
-
-//wait time
-//response time is the first time it starts working
-//turnaround time how long it took since time = 0
